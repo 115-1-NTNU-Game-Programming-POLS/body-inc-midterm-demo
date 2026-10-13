@@ -18,8 +18,14 @@ function fitCanvas() {
   OY = (windowHeight - H * SC) / 2;
 }
 
-function mx() { return (mouseX - OX) / SC; }
-function my() { return (mouseY - OY) / SC; }
+// p5's mouseX can be stale when a press arrives without a prior move (touch, or a click
+// right after a keypress), so track the pointer ourselves; the canvas sits at the page origin.
+let PX = 0, PY = 0;
+for (const type of ['pointerdown', 'pointermove']) {
+  window.addEventListener(type, (e) => { PX = e.clientX; PY = e.clientY; }, true);
+}
+function mx() { return (PX - OX) / SC; }
+function my() { return (PY - OY) / SC; }
 
 function paper() {
   noStroke();

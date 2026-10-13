@@ -350,7 +350,9 @@ function startCrisis() {
       S.crisis.borrowed = true;
       S.pool += 2;
       S.sleepFactors.push(['向夜班借調', 0.7]);
-      toast('待命池 +2，代價是今晚睡眠效率 ×0.7');
+      toast('夜班借來 2 枚，直接派去免疫部；代價是今晚睡眠效率 ×0.7');
+      // Borrowed staff go straight to the department in trouble.
+      for (let k = 0; k < 2 && S.crisis && S.pool > 0; k++) moveToken('pool');
     }, { size: 19, disabled: () => S.crisis && S.crisis.borrowed }),
     new Btn('暫不處理', bx + 240, 584, 220, 46, () => {
       S.flags.crisis = 'ignore';
@@ -471,7 +473,12 @@ SCENES.day = {
   skip() {
     if (S.event) { buttons[0].onClick(); return; }
     if (S.crisis) {
-      while (S.crisis) moveToken(S.pool > 0 ? 'pool' : S.tokens.brain > 2 ? 'brain' : 'muscle');
+      while (S.crisis) {
+        const from = S.pool > 0 ? 'pool' : S.tokens.brain > 2 ? 'brain'
+          : DEPTS.map((d) => d.id).find((id) => id !== 'immune' && id !== 'brain' && S.tokens[id] > 0);
+        if (!from) { S.flags.crisis = 'ignore'; endCrisis(); break; }
+        moveToken(from);
+      }
       return;
     }
     const next = [8, 10.5, 12.5, 14, 19, S.ch.bed].find((t) => t > S.hour + 0.01);
