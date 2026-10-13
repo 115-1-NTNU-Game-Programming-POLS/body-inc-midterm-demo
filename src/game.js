@@ -62,6 +62,29 @@ function enter(scene) {
   SCENES[scene].enter?.();
 }
 
+// Employee portraits by the team's artist; the art names the gut "intestine" and has no muscle-base.
+const ICON_FILE = { brain: 'brain', immune: 'immune', liver: 'liver', stomach: 'stomach', gut: 'intestine', muscle: 'muscle' };
+const ICONS = {};
+
+function preload() {
+  for (const [id, file] of Object.entries(ICON_FILE)) {
+    ICONS[id] = {
+      base: loadImage(`assets/organs/${file}-${id === 'muscle' ? 'normal' : 'base'}.png`),
+      warning: loadImage(`assets/organs/${file}-warning.png`),
+      quit: loadImage(`assets/organs/${file}-quit.png`),
+    };
+  }
+}
+
+function moodOf(id) {
+  const r = S.resent[id];
+  return r >= 85 ? 'quit' : r >= 60 ? 'warning' : 'base';
+}
+
+function portrait(id, x, y, size, mood = moodOf(id)) {
+  image(ICONS[id][mood], x, y, size, size);
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   fitCanvas();
@@ -161,6 +184,8 @@ SCENES.title = {
     txt('把一學期濃縮成十天，撐到期末考。', 96, 398, 32, C.ink, { font: HAND });
     txt('畫面流程原型：流程照腳本走，數值為示意。', 96, 464, 18, C.mute);
     buttons.forEach((b) => b.draw());
+    txt('公司員工', 96, 610, 18, C.red, { font: HAND });
+    DEPTS.forEach((d, i) => portrait(d.id, 180 + i * 70, 594, 66, 'base'));
     drawXiaochen(800, 150, 0.95);
     bubble('明天就期中考了……', 896, 250, { size: 22, left: true });
   },
@@ -248,8 +273,9 @@ const PANEL_X = 740;
 const ROW_Y = 100;
 const ROW_H = 46;
 
-function rowRect(i) { return { x: PANEL_X, y: ROW_Y + i * ROW_H, w: 500, h: ROW_H - 6 }; }
-function dotPos(i, k) { const r = rowRect(i); return [r.x + 104 + k * 22, r.y + r.h / 2]; }
+// Departments are laid out as a 3 x 2 grid of employee cards.
+function rowRect(i) { return { x: PANEL_X + (i % 3) * 170, y: 96 + Math.floor(i / 3) * 140, w: 160, h: 132 }; }
+function dotPos(i, k) { const r = rowRect(i); return [r.x + 18 + k * 20, r.y + 94]; }
 function poolDotPos(k) { return [PANEL_X + 120 + k * 24, 428]; }
 function inRect(r) { return mx() >= r.x && mx() <= r.x + r.w && my() >= r.y && my() <= r.y + r.h; }
 function bodyPt(p) { return [p[0] + BODY_OFFSET.x, p[1] + BODY_OFFSET.y]; }
@@ -519,8 +545,11 @@ function drawPanel() {
   DEPTS.forEach((d, i) => {
     const r = rowRect(i);
     const target = S.crisis && d.id === 'immune';
-    card(r.x, r.y, r.w, r.h, target ? C.pinkBg : C.white, target ? C.red : '#C9C2B2', target ? 3 : 1.8);
-    txt(d.name, r.x + 16, r.y + 8, 21, C.ink, { font: HAND, bold: true });
+    const res = S.resent[d.id];
+    card(r.x, r.y, r.w, r.h, target ? C.pinkBg : C.white, target || res >= 60 ? C.red : '#C9C2B2', target ? 3 : res >= 60 ? 2.4 : 1.8);
+    portrait(d.id, r.x + 2, r.y + 2, 76);
+    txt(d.name, r.x + 82, r.y + 14, 22, C.ink, { font: HAND, bold: true });
+    txt(res >= 85 ? '罷工中' : res >= 60 ? '抱怨中' : '上班中', r.x + 82, r.y + 46, 15, res >= 60 ? C.red : C.mute);
     for (let k = 0; k < S.tokens[d.id]; k++) {
       const [x, y] = dotPos(i, k);
       rbc(x, y, 9);
@@ -534,21 +563,21 @@ function drawPanel() {
     if (target) {
       for (let k = S.tokens.immune; k < S.crisis.target; k++) emptyToken(...dotPos(i, k), 9);
     }
-    const res = S.resent[d.id];
-    const bx = r.x + 330;
-    const by = r.y + r.h / 2 - 6;
+    const bx = r.x + 12;
+    const bw = 104;
+    const by = r.y + 112;
     noStroke();
     fill('#ECE8DD');
-    rect(bx, by, 120, 12, 6);
+    rect(bx, by, bw, 10, 5);
     fill(res >= 85 ? C.darkRed : res >= 60 ? C.red : '#E3A23B');
-    rect(bx, by, 120 * res / 100, 12, 6);
+    rect(bx, by, bw * res / 100, 10, 5);
     stroke(C.ink);
     strokeWeight(1.2);
-    line(bx + 72, by - 3, bx + 72, by + 15);
-    line(bx + 102, by - 3, bx + 102, by + 15);
-    txt(`${res}`, r.x + r.w - 14, r.y + r.h / 2, 16, res >= 60 ? C.red : C.mute, { align: RIGHT, valign: CENTER });
+    line(bx + bw * 0.6, by - 3, bx + bw * 0.6, by + 13);
+    line(bx + bw * 0.85, by - 3, bx + bw * 0.85, by + 13);
+    txt(`${res}`, r.x + r.w - 10, by + 5, 15, res >= 60 ? C.red : C.mute, { align: RIGHT, valign: CENTER });
   });
-  txt('怨氣　60 抱怨｜85 罷工', PANEL_X + 330, ROW_Y + 6 * ROW_H - 4, 13, C.mute);
+  txt('怨氣條：60 抱怨｜85 罷工', PANEL_X + 500, 372, 13, C.mute, { align: RIGHT });
   card(PANEL_X, 396, 500, 64, C.white, '#C9C2B2', 1.8);
   txt('待命池', PANEL_X + 16, 414, 21, C.ink, { font: HAND, bold: true });
   for (let k = 0; k < S.pool; k++) rbc(...poolDotPos(k), 10);
@@ -558,7 +587,8 @@ function drawPanel() {
     txt('調度危機（時間暫停）', PANEL_X + 20, 488, 24, C.darkRed, { font: HAND, bold: true });
     const got = S.tokens.immune - (S.crisis.target - S.crisis.need);
     txt(`免疫部還缺 ${S.crisis.target - S.tokens.immune} 枚，待命池只有 ${S.pool} 枚。把紅血球拖到免疫部；從別的部門挪人，該部門怨氣 +10。`,
-      PANEL_X + 20, 524, 17, C.ink, { w: 460, leading: 25 });
+      PANEL_X + 20, 524, 17, C.ink, { w: 360, leading: 25 });
+    portrait('immune', PANEL_X + 404, 498, 84, 'warning');
     txt(`已補 ${got} / ${S.crisis.need}`, PANEL_X + 480, 492, 18, C.darkRed, { font: HAND, align: RIGHT });
   } else {
     push();
@@ -667,15 +697,15 @@ function reportLines() {
   const bed = CHOICES.bed.find((c) => c.id === S.ch.bed).label;
   const lines = [];
   lines.push(S.ch.bed > 23
-    ? `第 4 天，宿主為了期中考熬到 ${bed}，大腦部門加班到深夜；`
-    : `第 4 天，宿主雖然 23:00 就寢，睡眠債仍有 ${S.debt.toFixed(1)} 小時；`);
+    ? `第 4 天，小晨為了期中考熬到 ${bed}，大腦部門加班到深夜；`
+    : `第 4 天，小晨雖然 23:00 就寢，睡眠債仍有 ${S.debt.toFixed(1)} 小時；`);
   const c = S.flags.crisis;
   lines.push(c === 'ignore' ? '下午室友狂咳時，免疫保全部的人手缺口始終沒有補上；'
     : c === 'brain' ? '營運長從大腦挪人支援免疫部，期中考後又全數調回讀書；'
       : c === 'borrow' ? '營運長向夜班借調人手，當晚的修復工作只完成七成；'
         : '免疫部雖然補足人手，怨氣卻一路逼近罷工；');
   if (S.flags.snack) lines.push('當晚還加點了鹹酥雞，胃部被迫上夜班。');
-  lines.push('第 7 天，室友的流感病毒長驅直入，免疫部罷工，宿主第二次被送進急診。');
+  lines.push('第 7 天，室友的流感病毒長驅直入，免疫部罷工，小晨第二次被送進急診。');
   return lines;
 }
 
@@ -716,7 +746,9 @@ SCENES.report = {
       pop();
     }
     txt('報告由因果紀錄自動追溯：每個狀態都記得是哪件事造成的。本展示的第 5 至 7 天以快轉帶過。', 900, 170, 18, C.soft, { w: 320, leading: 28 });
-    drawXiaochen(960, 300, 0.5, XC_FACE_SAD);
+    drawXiaochen(890, 330, 0.44, XC_FACE_SAD);
+    portrait('immune', 1050, 360, 170, 'quit');
+    txt('免疫保全部：罷工中', 1135, 540, 18, C.red, { font: HAND, align: CENTER });
     buttons.forEach((b) => b.draw());
   },
   skip() { enter('handbook'); },
