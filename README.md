@@ -31,7 +31,7 @@
 
 ## 本機執行
 
-不需要建置。在資料夾內啟動任一靜態伺服器即可，例如：
+不需要建置。程式以瀏覽器原生的 ES 模組載入，直接雙擊開啟 `index.html`（`file://`）會被瀏覽器擋下，需在資料夾內啟動任一靜態伺服器，例如：
 
 ```
 python -m http.server 8000
@@ -41,13 +41,19 @@ python -m http.server 8000
 
 ## 檔案
 
+程式依職責分層，下層不依賴上層；各層的分工與相依規則見 [docs/architecture.md](docs/architecture.md)。
+
 | 路徑 | 內容 |
 | --- | --- |
-| `index.html` | 頁面與函式庫載入 |
-| `src/ui.js` | 畫布縮放、筆記本背景、按鈕、對話泡泡等共用繪圖 |
-| `src/audio.js` | 背景音樂播放清單、即時合成音效、靜音開關 |
-| `src/assets.js` | 人體、器官員工與小晨的向量圖形資料 |
-| `src/game.js` | 場景流程、腳本事件與計算 |
+| `index.html` | 頁面、p5.js 與進入點載入 |
+| `src/main.js` | 進入點：接上 p5 的生命週期與輸入，分派給目前場景 |
+| `src/core/` | 遊戲狀態、場景切換、事件通知、提示與對話泡泡 |
+| `src/data/` | 部門、早上行程選項、員工手冊內文等純資料 |
+| `src/rules/` | 遊戲規則：行程與待命池、白天腳本、調度危機、事件卡、睡眠與考試計算、倒閉報告；只改狀態、不畫圖 |
+| `src/scenes/` | 各畫面（標題、早上規劃、白天、睡眠結算、倒閉報告、員工手冊）的繪製與操作；白天畫面拆在 `scenes/day/` |
+| `src/ui/` | 畫布縮放、配色字型、筆記本背景與共用繪圖、按鈕、提示便條、靜音按鈕 |
+| `src/art/` | 人體與小晨的向量圖形資料、器官員工插圖的載入與狀態切換 |
+| `src/audio/` | 音訊總線與靜音、背景音樂播放清單、即時合成音效、遊戲事件與音效的對應 |
 | `assets/organs/` | 器官員工插圖（去背、256px），每個器官有一般、警告、罷工三種狀態 |
 | `assets/music/` | 背景音樂（96 kbps，已正規化至 -18 LUFS） |
 
@@ -69,4 +75,4 @@ python -m http.server 8000
   Licensed under Creative Commons: By Attribution 4.0
   https://creativecommons.org/licenses/by/4.0/
 
-音效（按鈕、拖曳代幣、危機警報、事件卡、蓋章、解鎖手冊等）以 Web Audio API 即時合成，沒有使用音檔。各音效的音量經離線量測後以 `src/audio.js` 的 `SFX_TRIM` 校正為一致響度，修改音效後需重新量測。
+音效（按鈕、拖曳代幣、危機警報、事件卡、蓋章、解鎖手冊等）以 Web Audio API 即時合成，沒有使用音檔。各音效的音量經離線量測後以 `src/audio/sfx.js` 的 `SFX_TRIM` 校正為一致響度，修改音效後需重新量測（量測方法見 [docs/architecture.md](docs/architecture.md)）。
