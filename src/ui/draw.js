@@ -64,17 +64,21 @@ export function card(x, y, w, h, bg, border = C.ink, sw = 2.5) {
   rect(x, y, w, h, 16, 6, 18, 8);
 }
 
-export function sticky(x, y, w, h, angle, shadow = 'rgba(42,45,52,0.12)', dx = 6, dy = 8) {
+// Sticky note with a drop shadow. `inner` draws content in the note's own rotated frame,
+// so text stays aligned with the paper. Pass `shadow: null` for a flat note.
+export function sticky(x, y, w, h, o = {}) {
+  const { angle = 0, shadow = 'rgba(42,45,52,0.12)', dx = 6, dy = 8, r = 4, inner } = o;
   push();
   translate(x, y);
   rotate(angle);
   noStroke();
   if (shadow) {
     fill(shadow);
-    rect(dx, dy, w, h, 4);
+    rect(dx, dy, w, h, r);
   }
   fill(C.sticky);
-  rect(0, 0, w, h, 4);
+  rect(0, 0, w, h, r);
+  inner?.();
   pop();
 }
 

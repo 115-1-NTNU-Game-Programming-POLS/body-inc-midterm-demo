@@ -4,11 +4,11 @@ import { paper, rbc } from '../../ui/draw.js';
 import { Btn, buttons, setButtons, drawButtons } from '../../ui/button.js';
 import { registerScene, enter } from '../../core/scenes.js';
 import { S } from '../../core/state.js';
-import { emit } from '../../core/events.js';
+import { emit, on } from '../../core/events.js';
 import { toast } from '../../core/feedback.js';
 import { DEPTS, deptById } from '../../data/departments.js';
 import { advanceClock, dayOver, skipAhead } from '../../rules/timeline.js';
-import { moveToken, borrowNightShift, ignoreCrisis, autoResolveCrisis } from '../../rules/crisis.js';
+import { moveToken, borrowNightShift, ignoreCrisis, autoResolveCrisis, BORROW_TOKENS } from '../../rules/crisis.js';
 import { chooseEventOption } from '../../rules/evening-event.js';
 import { drawBodyMap } from './body-map.js';
 import { drawPanel } from './panel.js';
@@ -29,22 +29,22 @@ function speedButtons() {
 function crisisButtons() {
   const bx = PANEL_X + 20;
   return [
-    new Btn('向夜班借調 +2', bx, 584, 220, 46, borrowNightShift,
+    new Btn(`向夜班借調 +${BORROW_TOKENS}`, bx, 584, 220, 46, borrowNightShift,
       { size: 19, disabled: () => S.crisis && S.crisis.borrowed }),
     new Btn('暫不處理', bx + 240, 584, 220, 46, ignoreCrisis, { size: 19 }),
   ];
 }
 
-// The button set follows the day's mode; rebuild it only when the mode changes so hover
-// and selection state survive between frames.
-let mode = null;
-function syncButtons() {
-  const next = S.event ? 'event' : S.crisis ? 'crisis' : 'normal';
-  if (next === mode) return;
-  mode = next;
-  if (mode === 'event') setButtons(eventButtons());
-  else if (mode === 'crisis') setButtons([...crisisButtons(), ...speedButtons()]);
+// The button set depends on whether a crisis or event card is open. It is rebuilt from state
+// when the scene opens and whenever the rules announce one starting or ending, so it never
+// lags behind the state that changed it.
+function rebuildButtons() {
+  if (S.event) setButtons(eventButtons());
+  else if (S.crisis) setButtons([...crisisButtons(), ...speedButtons()]);
   else setButtons(speedButtons());
+}
+for (const name of ['crisis:start', 'crisis:end', 'event:start', 'event:end']) {
+  on(name, () => { if (S.scene === 'day') rebuildButtons(); });
 }
 
 function pressOutsideCrisis() {
@@ -64,13 +64,11 @@ function startDrag(from) {
 
 registerScene('day', {
   enter() {
-    mode = null;
-    syncButtons();
+    rebuildButtons();
   },
   draw() {
     advanceClock(deltaTime / 1000);
     if (dayOver()) { enter('night'); return; }
-    syncButtons();
     paper();
     drawBodyMap();
     drawPanel();

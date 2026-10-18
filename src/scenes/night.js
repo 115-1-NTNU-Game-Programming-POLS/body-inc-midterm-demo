@@ -7,8 +7,6 @@ import { choice } from '../data/choices.js';
 import { settleNight } from '../rules/sleep.js';
 import { drawXiaochen } from '../art/xiaochen.js';
 
-const PASS = 60;
-
 function drawSleepSheet(n) {
   card(96, 150, 560, 440, C.white);
   const rows = [
@@ -26,13 +24,13 @@ function drawSleepSheet(n) {
 }
 
 function drawExam(n) {
-  sticky(720, 150, 460, 300, 0.015, 'rgba(0,0,0,0.12)');
+  sticky(720, 150, 460, 300, { angle: 0.015, shadow: 'rgba(0,0,0,0.12)' });
   txt('第 5 天｜期中考', 750, 172, 24, C.red, { font: HAND, bold: true });
-  txt(`${n.score}`, 750, 206, 96, n.score >= PASS ? C.blue : C.red, { font: HAND, bold: true });
+  txt(`${n.score}`, 750, 206, 96, n.passed ? C.blue : C.red, { font: HAND, bold: true });
   txt('分', 750 + (n.score >= 100 ? 168 : 116), 260, 30, C.ink, { font: HAND });
   txt(`考試分數 = 學業進度 × 考試當天睡眠係數（${n.sExam.toFixed(2)}）`, 750, 330, 18, C.soft, { w: 420 });
   txt('同樣的讀書量，睡得越少，打折越多。', 750, 384, 18, C.soft, { w: 420 });
-  drawXiaochen(700, 440, 0.4, n.score >= PASS ? 'happy' : 'sad');
+  drawXiaochen(700, 440, 0.4, n.passed ? 'happy' : 'sad');
 }
 
 registerScene('night', {

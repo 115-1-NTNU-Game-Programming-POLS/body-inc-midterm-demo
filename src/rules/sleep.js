@@ -5,6 +5,7 @@ import { DEPTS, BRAIN_RESERVED } from '../data/departments.js';
 // Formulas follow the design doc so the trade-offs read correctly; inputs are illustrative.
 const WAKE_HOUR = 31; // 07:00 the next day
 const NEED_SLEEP = 8;
+export const PASS_SCORE = 60;
 
 // Study and exam multiplier from sleep debt, floored at 0.3.
 export function sFactor(debt) { return Math.max(0.3, 1 - 0.07 * debt); }
@@ -22,7 +23,8 @@ export function computeNight(st) {
   const progress = st.progress + studyH * studyEff;
   const sExam = sFactor(debt1);
   const score = Math.min(100, Math.round(60 * progress * sExam / 18));
-  return { sleepH, factors, eff, effSleep, debt0, debt1, studyH, studyEff, progress, sExam, score };
+  const passed = score >= PASS_SCORE;
+  return { sleepH, factors, eff, effSleep, debt0, debt1, studyH, studyEff, progress, sExam, score, passed };
 }
 
 // Apply tonight's sleep: debt changes and sleep lowers every department's resentment.

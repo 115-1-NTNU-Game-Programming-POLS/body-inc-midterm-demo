@@ -5,6 +5,7 @@ import { startEvent, EVENT_HOUR } from './evening-event.js';
 
 // Real seconds per in-game hour at 1x speed.
 export const SEC_PER_HOUR = 1.5;
+const LUNCH_TOKENS = 2;
 
 export function isPaused() {
   return Boolean(S.crisis || S.event);
@@ -51,11 +52,11 @@ export function runBeats() {
     S.marquee = '早期症狀：免疫部開始抱怨了。徵兆出現時處理，才不會惡化。';
   });
   beat('b12', h >= 12.5, () => {
-    const n = Math.min(2, S.pool);
+    const n = Math.min(LUNCH_TOKENS, S.pool);
     S.pool -= n;
     S.tokens.stomach += n;
     S.flags.lunch = n;
-    toast(n === 2 ? '午餐：胃要 2 枚代幣，待命池自動補上，時間不暫停' : '午餐：待命池不夠，胃只補到一部分');
+    toast(n === LUNCH_TOKENS ? `午餐：胃要 ${LUNCH_TOKENS} 枚代幣，待命池自動補上，時間不暫停` : '午餐：待命池不夠，胃只補到一部分');
   });
   beat('b13', h >= 13.4, () => {
     if (S.ch.afternoon === 'study') { S.marquee = '下午讀書中：大腦加派人手，讀書效率提升。'; }

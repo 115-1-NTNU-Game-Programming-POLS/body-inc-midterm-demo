@@ -55,7 +55,8 @@ export const SFX = {
 
 // Per-effect trim in dB so every effect peaks at the same loudness (about -24 dB, 200 ms
 // K-weighted window, which sits just above the music). Re-measure when an effect changes:
-// pass an OfflineAudioContext as `dest` to render an effect without playing it.
+// pass `dest = { ctx, master }` (an OfflineAudioContext and a node in it) to render an effect
+// without playing it; see docs/architecture.md.
 const SFX_TRIM = {
   click: 15, pick: 11.1, drop: 9.5, miss: 12.6, blip: 20.8, pop: 15.1,
   alarm: 9.2, card: 6.7, good: 6.5, bad: 7.2, stamp: -2.8, unlock: 3.6,

@@ -12,7 +12,7 @@ export const EVENT_CARD = {
   note: '沒有標準答案：社交也是一種資源。　手冊〈睡前進食與睡眠〉',
   options: [
     {
-      label: '走啊！', sub: '社交 +2｜胃要上夜班，睡眠效率 ×0.9',
+      label: '走啊！', sub: `社交 +2｜胃要上夜班，睡眠效率 ×${SNACK_SLEEP}`,
       apply() { S.social += 2; S.flags.snack = true; S.sleepFactors.push(['宵夜', SNACK_SLEEP]); },
     },
     {
@@ -20,7 +20,7 @@ export const EVENT_CARD = {
       apply() { S.social -= 1; S.stress += 5; },
     },
     {
-      label: '幫我帶一份', sub: '社交 +1｜胃要上夜班，睡眠效率 ×0.9',
+      label: '幫我帶一份', sub: `社交 +1｜胃要上夜班，睡眠效率 ×${SNACK_SLEEP}`,
       apply() { S.social += 1; S.flags.snack = true; S.sleepFactors.push(['宵夜', SNACK_SLEEP]); },
     },
   ],
@@ -36,6 +36,7 @@ export function chooseEventOption(i) {
   const opt = EVENT_CARD.options[i];
   opt.apply();
   S.event = null;
+  emit('event:end', i);
   toast(`你選了「${opt.label}」：${opt.sub}`, 3200);
   if (S.flags.snack) say('stomach', '又要上夜班？！');
 }

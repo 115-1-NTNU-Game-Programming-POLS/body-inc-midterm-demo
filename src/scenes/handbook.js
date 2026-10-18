@@ -30,7 +30,7 @@ registerScene('handbook', {
     txt('跨局進度：解鎖的手冊頁永久保留', 96, 44, 22, C.red, { font: HAND });
     txt(PAGE.title, 96, 74, 40, C.blue, { font: HAND, bold: true });
     drawPage();
-    sticky(850, 160, 340, 150, 0.03, null);
+    sticky(850, 160, 340, 150, { angle: 0.03, shadow: null });
     txt('下一局解鎖新選項', 874, 180, 22, C.red, { font: HAND, bold: true });
     txt(PAGE.unlocks, 874, 220, 20, C.ink, { font: HAND, w: 300 });
     drawXiaochen(930, 330, 0.48, 'happy');

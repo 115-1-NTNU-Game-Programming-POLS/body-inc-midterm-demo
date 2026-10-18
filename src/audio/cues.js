@@ -12,7 +12,7 @@ export function installCues() {
   on('crisis:start', () => sfx('alarm'));
   on('crisis:end', (result) => sfx(result === 'ignore' ? 'bad' : 'good'));
   on('event:start', () => sfx('card'));
-  on('night:settled', (n) => sfx(n.score >= 60 ? 'good' : 'bad'));
+  on('night:settled', (n) => sfx(n.passed ? 'good' : 'bad'));
   on('report:stamp', () => sfx('stamp'));
   on('scene:enter', (name) => { if (name === 'handbook') sfx('unlock'); });
 }

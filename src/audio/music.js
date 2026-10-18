@@ -32,8 +32,3 @@ export function installMusic() {
     if (document.hidden) bgm?.pause(); else resume();
   });
 }
-
-// For debugging and tests.
-export function musicState() {
-  return { track, src: bgm?.src, paused: bgm?.paused ?? true, el: bgm };
-}

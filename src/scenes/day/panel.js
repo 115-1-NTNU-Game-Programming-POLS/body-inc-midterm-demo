@@ -3,7 +3,7 @@ import { txt, card, sticky, rbc, emptyToken } from '../../ui/draw.js';
 import { S } from '../../core/state.js';
 import { DEPTS, WARN_AT, QUIT_AT, BRAIN_RESERVED } from '../../data/departments.js';
 import { choice } from '../../data/choices.js';
-import { crisisShortfall, crisisCovered } from '../../rules/crisis.js';
+import { crisisShortfall, crisisCovered, RESENT_PER_MOVE } from '../../rules/crisis.js';
 import { portrait } from '../../art/portraits.js';
 import { PANEL_X, rowRect, dotPos, poolDotPos, POOL_RECT } from './layout.js';
 
@@ -69,14 +69,14 @@ function drawPool() {
 function drawCrisisBox() {
   card(PANEL_X, 476, 500, 164, C.pinkBg, C.red, 3);
   txt('調度危機（時間暫停）', PANEL_X + 20, 488, 24, C.darkRed, { font: HAND, bold: true });
-  txt(`免疫部還缺 ${crisisShortfall()} 枚，待命池只有 ${S.pool} 枚。把紅血球拖到免疫部；從別的部門挪人，該部門怨氣 +10。`,
+  txt(`免疫部還缺 ${crisisShortfall()} 枚，待命池只有 ${S.pool} 枚。把紅血球拖到免疫部；從別的部門挪人，該部門怨氣 +${RESENT_PER_MOVE}。`,
     PANEL_X + 20, 524, 17, C.ink, { w: 360, leading: 25 });
   portrait('immune', PANEL_X + 404, 498, 84, 'warning');
   txt(`已補 ${crisisCovered()} / ${S.crisis.need}`, PANEL_X + 480, 492, 18, C.darkRed, { font: HAND, align: RIGHT });
 }
 
 function drawSchedule() {
-  sticky(PANEL_X, 476, 500, 164, 0, 'rgba(42,45,52,0.10)', 5, 6);
+  sticky(PANEL_X, 476, 500, 164, { shadow: 'rgba(42,45,52,0.10)', dx: 5, dy: 6 });
   txt('今日行程', PANEL_X + 20, 488, 22, C.red, { font: HAND, bold: true });
   const lines = [
     ['上午', '上課'],
@@ -100,7 +100,7 @@ function drawMarquee() {
 export function drawPanel() {
   drawClock();
   DEPTS.forEach(drawEmployeeCard);
-  txt('怨氣條：60 抱怨｜85 罷工', PANEL_X + 500, 372, 13, C.mute, { align: RIGHT });
+  txt(`怨氣條：${WARN_AT} 抱怨｜${QUIT_AT} 罷工`, PANEL_X + 500, 372, 13, C.mute, { align: RIGHT });
   drawPool();
   if (S.crisis) drawCrisisBox(); else drawSchedule();
   drawMarquee();

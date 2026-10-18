@@ -15,17 +15,17 @@ function startDay() {
 }
 
 function drawStatus() {
-  sticky(96, 150, 380, 220, -0.02);
-  push();
-  translate(96, 150);
-  rotate(-0.02);
-  txt('小晨的狀態', 24, 18, 26, C.red, { font: HAND, bold: true });
   const rows = [['睡眠債', `${S.debt} 小時`], ['壓力', `${S.stress} / 100`], ['社交', `${S.social} / 10`], ['學業進度', `${S.progress} 點`]];
-  rows.forEach(([k, v], i) => {
-    txt(k, 24, 62 + i * 36, 22, C.soft, { font: HAND });
-    txt(v, 356, 62 + i * 36, 22, C.ink, { font: HAND, bold: true, align: RIGHT });
+  sticky(96, 150, 380, 220, {
+    angle: -0.02,
+    inner() {
+      txt('小晨的狀態', 24, 18, 26, C.red, { font: HAND, bold: true });
+      rows.forEach(([k, v], i) => {
+        txt(k, 24, 62 + i * 36, 22, C.soft, { font: HAND });
+        txt(v, 356, 62 + i * 36, 22, C.ink, { font: HAND, bold: true, align: RIGHT });
+      });
+    },
   });
-  pop();
 }
 
 registerScene('morning', {
