@@ -145,7 +145,7 @@ class Btn {
   }
   click() {
     if (this.o.disabled && this.o.disabled()) return false;
-    if (this.hit()) { this.onClick(); return true; }
+    if (this.hit()) { sfx('click'); this.onClick(); return true; }
     return false;
   }
 }

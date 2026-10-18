@@ -25,6 +25,9 @@
 | → 、Enter 或空白鍵 | 跳到下一步（現場展示的備援） |
 | R | 從頭開始 |
 | 1、2、3 | 白天的時間速度 |
+| M 或右下角喇叭 | 開關音樂與音效（設定會記在瀏覽器） |
+
+瀏覽器規定要有使用者操作後才能播放聲音，所以音樂會在第一次點擊或按鍵後開始。
 
 ## 本機執行
 
@@ -42,10 +45,28 @@ python -m http.server 8000
 | --- | --- |
 | `index.html` | 頁面與函式庫載入 |
 | `src/ui.js` | 畫布縮放、筆記本背景、按鈕、對話泡泡等共用繪圖 |
+| `src/audio.js` | 背景音樂播放清單、即時合成音效、靜音開關 |
 | `src/assets.js` | 人體、器官員工與小晨的向量圖形資料 |
 | `src/game.js` | 場景流程、腳本事件與計算 |
 | `assets/organs/` | 器官員工插圖（去背、256px），每個器官有一般、警告、罷工三種狀態 |
+| `assets/music/` | 背景音樂（96 kbps，已正規化至 -18 LUFS） |
 
 ## 美術
 
 器官員工插圖由組員江兆耘繪製，經去背與縮圖後使用；部門怨氣達 60 時切換為警告圖、達 85 時切換為罷工圖。肌肉目前沒有一般狀態的圖，暫以 `muscle-normal.png` 代替。人體圖與小晨為程式繪製的示意圖。
+
+## 音樂與音效
+
+背景音樂依序循環播放以下三首，皆經轉檔為 96 kbps 並正規化至相同響度（-18 LUFS），未更動樂曲內容：
+
+- "Monkeys Spinning Monkeys" Kevin MacLeod (incompetech.com)
+  Licensed under Creative Commons: By Attribution 4.0
+  https://creativecommons.org/licenses/by/4.0/
+- "Carefree" Kevin MacLeod (incompetech.com)
+  Licensed under Creative Commons: By Attribution 4.0
+  https://creativecommons.org/licenses/by/4.0/
+- "Fluffing a Duck" Kevin MacLeod (incompetech.com)
+  Licensed under Creative Commons: By Attribution 4.0
+  https://creativecommons.org/licenses/by/4.0/
+
+音效（按鈕、拖曳代幣、危機警報、事件卡、蓋章、解鎖手冊等）以 Web Audio API 即時合成，沒有使用音檔。各音效的音量經離線量測後以 `src/audio.js` 的 `SFX_TRIM` 校正為一致響度，修改音效後需重新量測。

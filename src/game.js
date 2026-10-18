@@ -107,12 +107,14 @@ function draw() {
   drawingContext.clip();
   SCENES[S.scene].draw();
   drawToasts();
-  txt('→ 下一步　R 重來', 60, H - 12, 13, '#9A958A', { valign: BOTTOM });
+  txt('→ 下一步　R 重來　M 聲音', 60, H - 12, 13, '#9A958A', { valign: BOTTOM });
+  drawMuteButton();
   drawingContext.restore();
   pop();
 }
 
 function mousePressed() {
+  if (muteButtonHit()) { toggleMute(); return false; }
   const sc = SCENES[S.scene];
   if (sc.press && sc.press()) return false;
   for (const b of buttons) if (b.click()) return false;
@@ -125,10 +127,12 @@ function keyPressed() {
   if (key === 'r' || key === 'R') newGame();
   else if (keyCode === RIGHT_ARROW || keyCode === ENTER || key === ' ') SCENES[S.scene].skip?.();
   else if (key === '1' || key === '2' || key === '3') S.speed = Number(key);
+  else if (key === 'm' || key === 'M') toggleMute();
 }
 
-function toast(msg, ms = 2600) { S.toasts.push({ msg, until: millis() + ms }); }
+function toast(msg, ms = 2600) { sfx('pop'); S.toasts.push({ msg, until: millis() + ms }); }
 function say(dept, msg, ms = 3200) {
+  sfx('blip');
   S.bubbles = S.bubbles.filter((b) => b.dept !== dept);
   S.bubbles.push({ dept, msg, until: millis() + ms });
 }
@@ -188,6 +192,8 @@ SCENES.title = {
     DEPTS.forEach((d, i) => portrait(d.id, 180 + i * 70, 594, 66, 'base'));
     drawXiaochen(800, 150, 0.95);
     bubble('明天就期中考了……', 896, 250, { size: 22, left: true });
+    txt(`音樂：${TRACKS.map((t) => t.title).join('、')}，Kevin MacLeod（incompetech.com），CC BY 4.0`,
+      W - 48, H - 12, 13, '#9A958A', { align: RIGHT, valign: BOTTOM });
   },
   skip() { enter('morning'); },
 };
@@ -341,6 +347,7 @@ function startCrisis() {
   S.hour = 14;
   const need = Math.max(2, S.pool + 1);
   S.crisis = { target: S.tokens.immune + need, need, moved: [], borrowed: false };
+  sfx('alarm');
   S.marquee = '調度危機！室友在宿舍狂咳，免疫部要求增援。';
   say('immune', '病毒來了，人手不夠！', 6000);
   const bx = PANEL_X + 20;
@@ -368,6 +375,7 @@ function endCrisis() {
   S.crisis = null;
   buttons = [];
   speedButtons();
+  sfx(S.flags.crisis === 'ignore' ? 'bad' : 'good');
   toast(S.flags.crisis === 'ignore' ? '免疫部的缺口沒補上，怨氣大增' : '危機解除，時間繼續');
 }
 
@@ -383,6 +391,7 @@ function moveToken(from) {
     say(from, from === 'brain' ? '我的專注力預算呢？' : '人被挪走了，工作做不完！');
   }
   S.tokens.immune += 1;
+  sfx('drop');
   S.crisis.moved.push(from);
   if (S.tokens.immune >= S.crisis.target) {
     S.flags.crisis = S.crisis.moved.includes('brain') ? 'brain'
@@ -395,6 +404,7 @@ function moveToken(from) {
 function startEvent() {
   S.hour = 19;
   S.event = true;
+  sfx('card');
   const opts = [
     ['走啊！', '社交 +2｜胃要上夜班，睡眠效率 ×0.9', () => { S.social += 2; S.flags.snack = true; S.sleepFactors.push(['宵夜', 0.9]); }],
     ['不了，我要睡', '社交 −1｜壓力 +5', () => { S.social -= 1; S.stress += 5; }],
@@ -452,13 +462,13 @@ SCENES.day = {
       return false;
     }
     for (let k = 0; k < S.pool; k++) {
-      if (dist(mx(), my(), ...poolDotPos(k)) < 13) { S.drag = { from: 'pool' }; return true; }
+      if (dist(mx(), my(), ...poolDotPos(k)) < 13) { S.drag = { from: 'pool' }; sfx('pick'); return true; }
     }
     for (let i = 0; i < DEPTS.length; i++) {
       const id = DEPTS[i].id;
       if (id === 'immune') continue;
       for (let k = 0; k < S.tokens[id]; k++) {
-        if (dist(mx(), my(), ...dotPos(i, k)) < 13) { S.drag = { from: id }; return true; }
+        if (dist(mx(), my(), ...dotPos(i, k)) < 13) { S.drag = { from: id }; sfx('pick'); return true; }
       }
     }
     return false;
@@ -468,6 +478,7 @@ SCENES.day = {
     const immuneIdx = DEPTS.findIndex((d) => d.id === 'immune');
     const [cx, cy] = bodyPt(deptById.immune.center);
     if (inRect(rowRect(immuneIdx)) || dist(mx(), my(), cx, cy) < 80) moveToken(S.drag.from);
+    else sfx('miss');
     S.drag = null;
   },
   skip() {
@@ -657,6 +668,7 @@ SCENES.night = {
     const score = Math.min(100, Math.round(60 * progress * sExam / 18));
     S.night = { sleepH, factors, eff, effSleep, debt0, debt1, studyH, studyEff, progress, sExam, score };
     S.debt = debt1;
+    sfx(score >= 60 ? 'good' : 'bad');
     for (const d of DEPTS) S.resent[d.id] = Math.max(0, Math.round(S.resent[d.id] - 8 * effSleep));
     buttons.push(new Btn('快轉到第 7 天（展示用）→', 860, 620, 340, 62, () => enter('report'), { bg: C.blue, size: 22 }));
   },
@@ -741,6 +753,7 @@ SCENES.report = {
     txt('調查委員會建議：閱讀員工手冊〈睡眠與免疫力〉。', 130, 560, 22, C.ink, { font: HAND });
     const t = Math.min(1, (millis() - S.enteredAt - 600) / 300);
     if (t > 0) {
+      if (!S.flags.stamped) { S.flags.stamped = true; sfx('stamp'); }
       push();
       translate(760, 520);
       rotate(-0.26);
@@ -765,6 +778,7 @@ SCENES.report = {
 
 SCENES.handbook = {
   enter() {
+    sfx('unlock');
     buttons.push(new Btn('再玩一次', 860, 620, 170, 62, () => { newGame(); enter('morning'); }, { bg: C.blue, size: 22 }));
     buttons.push(new Btn('回標題', 1046, 620, 150, 62, () => newGame(), { size: 22 }));
   },
