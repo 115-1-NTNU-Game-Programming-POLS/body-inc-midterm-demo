@@ -7,6 +7,10 @@ import { DEPTS } from '../data/departments.js';
 import { portrait } from '../art/portraits.js';
 import { drawXiaochen } from '../art/xiaochen.js';
 import { TRACKS } from '../audio/music.js';
+import { drawBadge } from '../art/brand.js';
+
+// Beside the title, clear of 小晨's speech bubble (which starts around x = 668).
+const BADGE = { x: 518, y: 124, size: 128 };
 
 registerScene('title', {
   enter() {
@@ -16,6 +20,7 @@ registerScene('title', {
     paper();
     txt('遊戲程式設計 115-1｜第七組｜期中提案展示版', 96, 96, 22, C.red, { font: HAND });
     txt('人體股份\n有限公司', 92, 138, 104, C.blue, { font: HAND, bold: true, leading: 116 });
+    drawBadge(BADGE.x, BADGE.y, BADGE.size, -0.05);
     noStroke();
     fill(C.yellow);
     rect(92, 422, 520, 18);

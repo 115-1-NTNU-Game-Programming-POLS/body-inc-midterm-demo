@@ -10,6 +10,7 @@ import { drawMuteButton, pressMuteButton } from './ui/mute-button.js';
 import { S } from './core/state.js';
 import { currentScene, newGame } from './core/scenes.js';
 import { loadPortraits } from './art/portraits.js';
+import { loadBrand } from './art/brand.js';
 import { installAudioUnlock, toggleMute } from './audio/mixer.js';
 import { installMusic } from './audio/music.js';
 import { installCues } from './audio/cues.js';
@@ -24,7 +25,10 @@ installAudioUnlock();
 installMusic();
 installCues();
 
-window.preload = () => loadPortraits();
+window.preload = () => {
+  loadPortraits();
+  loadBrand();
+};
 
 window.setup = () => {
   createCanvas(windowWidth, windowHeight);

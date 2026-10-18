@@ -1,5 +1,7 @@
 # 人體股份有限公司：期中提案展示版
 
+<img src="assets/brand/logo-lockup-1200.png" alt="人體股份有限公司 Body Inc. 標誌" width="600">
+
 國立臺灣師範大學「遊戲程式設計」（115-1）第七組期末專題《人體股份有限公司》的期中提案展示版。這是畫面流程原型，流程照腳本走，數值為示意；睡眠債、讀書效率與考試打折的計算沿用設計文件的公式。
 
 線上試玩：https://115-1-ntnu-game-programming-pols.github.io/body-inc-midterm-demo/
@@ -56,10 +58,13 @@ python -m http.server 8000
 | `src/audio/` | 音訊總線與靜音、背景音樂播放清單、即時合成音效、遊戲事件與音效的對應 |
 | `assets/organs/` | 器官員工插圖（去背、256px），每個器官有一般、警告、罷工三種狀態 |
 | `assets/music/` | 背景音樂（96 kbps，已正規化至 -18 LUFS） |
+| `assets/brand/` | 團隊標誌：標題畫面用的方形圖示、橫式標誌、網頁圖示 |
 
 ## 美術
 
 器官員工插圖由組員江兆耘繪製，經去背與縮圖後使用；部門怨氣達 60 時切換為警告圖、達 85 時切換為罷工圖。肌肉目前沒有一般狀態的圖，暫以 `muscle-normal.png` 代替。人體圖與小晨為程式繪製的示意圖。
+
+團隊標誌以 Google Gemini 生成的圖為底稿：保留印章外框與打領帶的紅血球員工，將生成圖中無意義的仿中文印文換成「人體公司」（微軟正黑體），移動紅血球位置並補回被遮住的外框，最後去背。橫式標誌的中文字名使用標楷體。完整尺寸的原始檔在 [body-inc](https://github.com/115-1-NTNU-Game-Programming-POLS/body-inc) 的 `assets/brand/`。
 
 ## 音樂與音效
 
